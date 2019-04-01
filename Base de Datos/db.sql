@@ -46,3 +46,15 @@ CREATE TABLE transferencia(
 	CONSTRAINT tc1_fk FOREIGN KEY ( codigoCuentaOrigen ) REFERENCES cuenta ( codigoCuenta ) ON DELETE CASCADE ON UPDATE CASCADE,
 	CONSTRAINT tc2_fk FOREIGN KEY ( codigoCuentaDestino ) REFERENCES cuenta ( codigoCuenta )
 );
+
+INSERT INTO tipo
+VALUES ('Crédito');
+
+INSERT INTO tipo
+VALUES ('Débito');
+
+INSERT INTO usuario
+VALUES(1000,'Carlos Peralta', 'CPeralta2019', 'carloperalta@gmail.com', 'C@rl0sP3ralta');
+
+INSERT INTO cuenta
+VALUES(10000,1000,1000);
