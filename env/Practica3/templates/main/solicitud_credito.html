@@ -1,0 +1,172 @@
+{% extends 'main/base.html' %}
+{% load humanize %}
+{% block content %}
+<div class="container" style="width: 100%; height: 525px; margin-top: 80px; background-color: #ffffff">
+    <div class="row text-center">
+        <h4><br/></h4><hr/><br/>
+        <div class="col-md-4"></div>
+        <h3><a href="#" style="text-decoration:none;cursor:pointer;">Solicitudes de Crédito</a></h3>
+        <h4><br/></h4>
+        <p>
+            <button id="btnAprobar" type="button" class="btn btn-outline-primary">Aprobar</button>
+            <button id="btnRechazar" type="button" class="btn btn-outline-danger">Rechazar</button>
+        </p>
+        <div class="form-horizontal text-center" style="margin-top: 25px;">
+            {% if creditos.count > 0 %}
+            <div class="table-responsive">
+                <table name="tblDatos" class="table text-center table-hover table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>No. cuenta</th>
+                            <th>Fecha y hora</th>
+                            <th>Descripción</th>
+                            <th>Estado</th>
+                            <th>Monto</th>
+                            <th>Seleccionar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="datos">
+                        {% for db in creditos %}
+                        <tr>
+                            {% if db.estado == 'e' %}
+                                <td>{{ db.no_cuenta.no_cuenta }}</td>
+                                <td>{{ db.fecha_hora }}</td>
+                                <td>{{ db.descripcion }}</td>
+                                {% if db.estado == 'v' %}
+                                    <td>Aprobado</td>
+                                {% elif db.estado == 'e' %}
+                                    <td>En espera</td>
+                                {% else %}
+                                    <td>Rechazado</td>
+                                {% endif %}
+                                <td>${{ db.monto|stringformat:'.2f'|intcomma }}</td>
+                                <td><input type=checkbox id=chkDato value={{db.cod}}></td>
+                            {% endif %}                            
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p><strong>No se ha realizado créditos ni débitos a su cuenta.</strong></p>
+            {% endif %}            
+        <div class="col-md-4"></div>
+    </div>
+    <hr/>
+</div>
+    
+<div class="modal fade" id="formularioAprobar" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Aprobar Crédito</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formAprobar">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">¿Desea aprobar el crédito?</label>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" value="aprobar" name="_aprobar">Confirmar</button>
+                    </div>
+                </form>
+            </div>
+        </div>    
+    </div>
+</div>
+    
+<div class="modal fade" id="formularioRechazar" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rechazar Crédito</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formRechazar">
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">¿Desea rechazar el crédito?</label>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" value="rechazar" name="_rechazar">Confirmar</button>
+                    </div>
+                </form>
+            </div>
+        </div>    
+    </div>
+</div>  
+    
+{% endblock %}
+
+
+{% block javascript %}
+
+<script>
+        
+    $('#btnAprobar').on("click",function(){
+        parametro = '';
+        $('#chkDato:checked').each(function(){
+            parametro = parametro + $(this).val() + '/';
+        });
+        if(parametro){            
+            $('#formularioAprobar').modal('show');
+        }
+        else{
+            alert("Debe seleccionar un registro!");
+        }
+    });
+   
+    $('#formAprobar').on("submit",function(event){
+        console.log(parametro);
+        $('#formularioAprobar').modal('hide');                
+        $.ajax({
+            url: "/solicitud_credito/",
+            data: {'id':parametro},
+            datatype: 'json',
+            error: function(){alert('Error al llamar a la vista')},
+            success: function(datos){
+                location.reload(); 
+            }
+        });
+        event.preventDefault();
+    });
+   
+    $('#btnRechazar').on("click",function(){
+        parametro = '';
+        $('#chkDato:checked').each(function(){
+            parametro = parametro + $(this).val() + '/';
+        });
+        if(parametro){            
+            $('#formularioRechazar').modal('show');
+        }
+        else{
+            alert("Debe seleccionar un registro!");
+        }
+    });
+    
+    $('#formRechazar').on("submit",function(event){
+        console.log(parametro);
+        $('#formularioRechazar').modal('hide');                
+        $.ajax({
+            url: "/solicitud_credito/",
+            data: {'id2':parametro},
+            datatype: 'json',
+            error: function(){alert('Error al llamar a la vista')},
+            success: function(datos){
+                location.reload(); 
+            }
+        });
+        event.preventDefault();
+    });
+    
+</script>
+{% endblock %}
+    
